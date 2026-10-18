@@ -12,7 +12,7 @@
     --paper-raised:#E7DFC9;
     --ink:#211E19;
     --ink-soft:#5B5546;
-    --meta:#938970;
+    --meta:#706650;
     --line:#DAD0B4;
     --accent:#2C4356;
     --accent-soft:#5D7A91;
@@ -27,7 +27,7 @@
       --paper-raised:#1C222A;
       --ink:#EAE3D1;
       --ink-soft:#B7AE96;
-      --meta:#797360;
+      --meta:#A69D86;
       --line:#333C46;
       --accent:#93B9D9;
       --accent-soft:#5F86A5;
@@ -40,7 +40,7 @@
     --paper-raised:#1C222A;
     --ink:#EAE3D1;
     --ink-soft:#B7AE96;
-    --meta:#797360;
+    --meta:#A69D86;
     --line:#333C46;
     --accent:#93B9D9;
     --accent-soft:#5F86A5;
@@ -114,7 +114,7 @@
     grid-template-columns:1fr auto;
     align-items:baseline;
     gap:1rem;
-    padding:1.05rem 0;
+    padding:1.15rem 0;
     border-bottom:1px solid var(--line);
     position:relative;cursor:pointer;
     text-decoration:none;
@@ -122,7 +122,7 @@
   }
   .post-row:hover .post-title{color:var(--accent);}
   .post-row:hover{background:var(--paper-raised);margin-inline:-.75rem;padding-inline:.75rem;}
-  .post-row::after{content:'→';align-self:center;color:var(--accent);font-family:var(--font-mono);font-size:.9rem;opacity:0;transform:translateX(-.25rem);transition:opacity .16s ease,transform .16s ease;}
+  .post-row::after{content:'→';position:absolute;right:.2rem;top:50%;color:var(--accent);font-family:var(--font-mono);font-size:.9rem;opacity:0;transform:translateX(-.25rem);transition:opacity .16s ease,transform .16s ease;}
   .post-row:hover::after,.post-row:focus-visible::after{opacity:1;transform:translateX(0);}
   .post-main{min-width:0;}
   .post-title{
@@ -135,7 +135,7 @@
   }
   .post-meta{
     display:flex;flex-direction:column;align-items:flex-end;gap:.4rem;
-    font-family:var(--font-mono);font-size:.72rem;color:var(--meta);white-space:nowrap;
+    font-family:var(--font-mono);font-size:.78rem;color:var(--meta);white-space:nowrap;
   }
   .tag{
     font-family:var(--font-mono);font-size:.68rem;letter-spacing:.03em;
@@ -176,6 +176,12 @@
   .doc-body strong{font-weight:700;color:var(--ink);}
   .doc-body a{color:var(--accent);text-decoration:underline;text-underline-offset:.2em;word-break:break-all;}
   .doc-body .divider{text-align:center;color:var(--meta);margin:2.4rem 0;letter-spacing:.5em;font-size:.8rem;}
+
+  .post-end{margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;justify-content:space-between;gap:1.2rem;}
+  .post-end a{color:var(--accent);font-size:.9rem;line-height:1.7;text-decoration:none;text-underline-offset:.25em;}
+  .post-end a:hover{text-decoration:underline;}
+  .post-next{max-width:75%;text-align:right;}
+  @media(max-width:400px){.site-header{gap:.5rem;flex-wrap:wrap;}.site-nav button{padding:.5rem .6rem;}.post-next{max-width:100%;text-align:left;}}
 
   /* ---------- about ---------- */
   .about-doc{max-width:640px;margin:0 auto;padding-top:2.6rem;}
@@ -321,6 +327,15 @@
     return h || '/';
   }
 
+  function sortedPosts(){
+    return POSTS.slice().sort(function(a,b){return ((b.dateSort||0)-(a.dateSort||0)) || ((b.order||0)-(a.order||0));});
+  }
+  function indexDate(p){
+    var date = String(p.dateSort || '');
+    if(!/^\d{8}$/.test(date)) return p.dateLabel || '';
+    var month = date.slice(0,4) + '年' + Number(date.slice(4,6)) + '月';
+    return /月\d+日$/.test(p.dateLabel || '') ? month + Number(date.slice(6,8)) + '日' : month;
+  }
   function renderIndex(){
     if (!POSTS.length) {
       main.innerHTML = '<div class="empty-state">还没有文章。</div>';
@@ -336,7 +351,7 @@
       html += '<a class="post-row" href="#/post/' + p.id + '" data-nav="/post/' + p.id + '">';
       html += '  <div class="post-main"><div class="post-title">' + escapeHtml(p.title||'无题') + '</div>';
       html += '    <div class="post-excerpt">' + escapeHtml(excerptOf(p.content)) + '</div></div>';
-      html += '  <div class="post-meta"><span class="tag">' + escapeHtml(p.kind||'') + '</span><span>' + escapeHtml(p.dateLabel||'') + '</span></div>';
+      html += '  <div class="post-meta"><span class="tag">' + escapeHtml(p.kind||'') + '</span><span>' + escapeHtml(indexDate(p)) + '</span></div>';
       html += '</a>';
     });
     html += '</section>';
@@ -354,7 +369,11 @@
     html += '<div class="doc-meta-row"><span class="tag">' + escapeHtml(p.kind||'') + '</span><span>' + escapeHtml(p.dateLabel||'') + '</span></div>';
     html += '</div>';
     html += '<div class="doc-body">' + renderContent(p.content) + '</div>';
-    html += '</article>';
+    var ordered = sortedPosts();
+    var next = ordered[ordered.findIndex(function(item){ return item.id === p.id; }) + 1];
+    html += '<nav class="post-end" aria-label="文章导航"><a href="#/" data-nav="/">← 返回目录</a>';
+    if(next) html += '<a class="post-next" href="#/post/' + next.id + '" data-nav="/post/' + next.id + '">下一篇 · ' + escapeHtml(next.title) + ' →</a>';
+    html += '</nav></article>';
     main.innerHTML = html;
     document.title = p.title + ' — Chengxin Zeng';
   }
