@@ -343,7 +343,7 @@
     return joined.length > 96 ? joined.slice(0, 96) + '…' : joined;
   }
 
-  function go(path){ location.hash = '#' + path; }
+  function go(path){ rememberIndex(); location.hash = '#' + path; }
   function currentPath(){
     var h = location.hash.replace(/^#/, '');
     return h || '/';
@@ -465,7 +465,6 @@
         else b.removeAttribute('aria-current');
       }
     });
-    rememberIndex();
     activePath = path;
     if (path === '/') renderIndex();
     else if (path === '/about') renderAbout();
